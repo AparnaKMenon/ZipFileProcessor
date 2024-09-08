@@ -8,8 +8,8 @@ namespace ZipFileProcessor.Services
 {
     public interface ILoggerService
     {
-        void LogInformation(string message, string methodName = "");
-        void LogWarning(string message, string methodName = "");
-        void LogError(string message, Exception ex = null, string methodName = "");
+        void LogInformation(string message="");
+        void LogWarning(string message);
+        void LogError(string message, Exception ex = null);
     }
 }

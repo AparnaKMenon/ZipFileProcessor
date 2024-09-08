@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -33,6 +30,7 @@ namespace ZipFileProcessor.Services
 
         public async Task ProcessZipFilesAsync()
         {
+            LogFunctionEntry();
             try
             {
                 _logger.LogInformation("Starting to process ZIP files.");
@@ -50,10 +48,12 @@ namespace ZipFileProcessor.Services
             {
                 _logger.LogError("An error occurred while processing ZIP files.", ex);
             }
+            LogFunctionExit();
         }
 
         private async Task ProcessSingleZipFileAsync(string zipFilePath)
         {
+            LogFunctionEntry();
             string extractPath = string.Empty;
             try
             {                
@@ -78,11 +78,12 @@ namespace ZipFileProcessor.Services
                     string newFolderName = $"{applicationNo}-{Guid.NewGuid()}";
                     string newFolderPath = Path.Combine(_zipProcessingSettings.ExtractedFolderLocation, newFolderName);
 
-                    Directory.Move(extractPath, newFolderPath);                   
-                    _logger.LogInformation($"Renamed extracted folder to '{newFolderName}'");
+                    Directory.Move(extractPath, newFolderPath);  
+                    string message = $"Renamed extracted folder to '{newFolderName}'";
+                    _logger.LogInformation(message);
 
                     // Notify via email
-                    string message = $"ZIP file '{zipFilePath}' processed and extracted to '{newFolderPath}'.";
+                    message = $"ZIP file '{zipFilePath}' processed and extracted to '{newFolderPath}'.";
                     await _emailService.SendEmailAsync("ZIP File Processed", message);
                 }
                 else
@@ -98,10 +99,12 @@ namespace ZipFileProcessor.Services
                     Directory.Delete(extractPath, true); // Clean up if something goes wrong
                 }
             }
+            LogFunctionExit();
         }
 
         private void ValidateExtractedFiles(string extractPath)
         {
+            LogFunctionEntry();
             string[] files = Directory.GetFiles(extractPath, "*.*", SearchOption.AllDirectories);
             var validExtensions = _zipProcessingSettings.ValidFileTypes.Select(ext => $".{ext.ToLower()}").ToArray();
 
@@ -110,15 +113,19 @@ namespace ZipFileProcessor.Services
                 string fileExtension = Path.GetExtension(file).ToLower();
                 if (!validExtensions.Contains(fileExtension))
                 {
-                    throw new Exception($"Invalid file type '{fileExtension}' found in extracted files: '{file}'.");
+                    string msg = $"Invalid file type '{fileExtension}' found in extracted files: '{file}'.";
+                    _logger.LogError(msg);
+                    throw new Exception(msg);
                 }
             }
 
             _logger.LogInformation("All extracted files have valid formats.");
+            LogFunctionExit();
         }
 
         private int GetApplicationNumberFromXml(string xmlFilePath)
         {
+            LogFunctionEntry(); 
             XmlDocument doc = new XmlDocument();
             doc.Load(xmlFilePath);
 
@@ -128,12 +135,14 @@ namespace ZipFileProcessor.Services
                 throw new Exception("Invalid or missing applicationno in party.xml");
             }
 
+            LogFunctionExit();
             return applicationNo;
         }
 
 
         private void ValidatePartyXml(string xmlFilePath)
         {
+            LogFunctionEntry();
             XmlSchemaSet schema = new XmlSchemaSet();
             schema.Add(null, _zipProcessingSettings.PartyXsdFileNameWithLocation);
 
@@ -160,8 +169,18 @@ namespace ZipFileProcessor.Services
             {
                 while (reader.Read()) { } // Read the XML file, triggers validation
             }
+            string message = $"'{xmlFilePath}' validated successfully against '{_zipProcessingSettings.PartyXsdFileNameWithLocation}'.";
+            _logger.LogInformation(message);
+            LogFunctionExit();
+        }
 
-            _logger.LogInformation($"'{xmlFilePath}' validated successfully against '{_zipProcessingSettings.PartyXsdFileNameWithLocation}'.");
+        private void LogFunctionEntry([CallerMemberName] string methodName = "")
+        {
+            _logger.LogInformation($"Entering method: {methodName}");
+        }
+        private void LogFunctionExit([CallerMemberName] string methodName = "")
+        {
+            _logger.LogInformation($"Exiting method: {methodName}");
         }
     }
 }

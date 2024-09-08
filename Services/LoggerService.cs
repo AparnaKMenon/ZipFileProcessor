@@ -12,19 +12,19 @@ namespace ZipFileProcessor.Services
             _logger = logger;
         }
 
-        public void LogInformation(string message, [CallerMemberName] string methodName = "")
+        public void LogInformation(string message)
         {
-            _logger.LogInformation($"[{methodName}] {message}");
+            _logger.LogInformation($"{message}");
         }
 
-        public void LogWarning(string message, [CallerMemberName] string methodName = "")
+        public void LogWarning(string message)
         {
-            _logger.LogWarning($"[{methodName}] {message}");
+            _logger.LogWarning($"{message}");
         }
 
-        public void LogError(string message, Exception ex = null, [CallerMemberName] string methodName = "")
+        public void LogError(string message, Exception ex = null)
         {
-            _logger.LogError(ex, $"[{methodName}] {message}");
+            _logger.LogError(ex, $"{message}");
         }
     }
 }
