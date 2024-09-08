@@ -24,7 +24,7 @@ This application processes ZIP files that are uploaded to the court's website by
   - Must include an XML file named `party.xml`, conforming to the provided XSD schema.
 - Extracts valid ZIP files into a folder named `[applicationno]-[guid]`, e.g., `1700017-CCD375E5-D546-44C6-A739-8267F4ABDA83`.
 - Sends an email notification to the administrator on success or failure.
-- Logs all actions performed by the system.
+- Logs all actions performed by the system - Log file with date placed in Logs Folder.
 - Configurable settings via `appsettings.json` and `secrets.json`.
 
 ## Requirements
@@ -72,7 +72,7 @@ Sensitive data such as SMTP credentials are stored here. Make sure to set up sec
 ```json
  "EmailSettings": {
         "SmtpHost": "*********************.com",
-        "SmtpPort": 587,
+        "SmtpPort": ###,
         "SenderEmail": "*************@********.com",
         "SenderPassword": "**********************",
         "AdminEmail": "*************@********.com"
@@ -101,7 +101,7 @@ The application logs all activities and errors. The log file location can be con
 
 Once deployed, the application will monitor the designated folder for incoming ZIP files. It will:
 
-- Validate the ZIP file.
+- Validate the ZIP file.(1 Correct and 2 incorrect Zip files are placed in ZipSourceFolder for testing)
 - Extract it if valid or raise an error if not.
 - Send a notification email to the administrator.
 
@@ -122,5 +122,5 @@ If the ZIP file is invalid (either corrupted or contains unsupported file types)
 
 - UnitTest Projects for all Services
 - More robust error logging and check on every error condition based on end to end testing.
-- Coding optimization
+- Coding optimization - use of tasks in an optimized manner
 

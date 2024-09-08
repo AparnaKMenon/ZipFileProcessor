@@ -114,7 +114,9 @@ namespace ZipFileProcessor.Services
                 string fileExtension = Path.GetExtension(file).ToLower();
                 if (!validExtensions.Contains(fileExtension))
                 {
-                    string message = $"Invalid file type '{fileExtension}' found in extracted files: '{file}'.";
+                    string subject = $"Invalid file type '{fileExtension}' found";
+                    string message = subject + $" in extracted files: '{file}'.";
+                    _emailService.SendEmail(subject, message);
                     _logger.LogError(message);
 
                     throw new Exception(message);

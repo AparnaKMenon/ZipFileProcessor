@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
 
 namespace ZipFileProcessor.Services
 {
@@ -15,16 +14,19 @@ namespace ZipFileProcessor.Services
         public void LogInformation(string message)
         {
             _logger.LogInformation($"{message}");
+            Console.WriteLine("Information : " + message);
         }
 
         public void LogWarning(string message)
         {
             _logger.LogWarning($"{message}");
+            Console.WriteLine("Warning : " + message);
         }
 
         public void LogError(string message, Exception ex = null)
         {
             _logger.LogError(ex, $"{message}");
+            Console.WriteLine("Error : " + message);
         }
     }
 }
