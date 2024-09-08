@@ -40,9 +40,6 @@ bld/
 #!**/[Pp]ackages/build/
 #!**/[Pp]ackages/repositories.config
 
-#temp
-appsettings.json
-
 # .NET Core-specific
 project.lock.json
 project.fragment.lock.json

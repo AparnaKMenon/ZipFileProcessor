@@ -42,7 +42,16 @@ namespace ZipFileProcessor
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     config.SetBasePath(AppContext.BaseDirectory).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                   
+                    // Load secrets.json from Current Directory
+                    var secretFilePath = Path.Combine(Directory.GetCurrentDirectory(), "secrets.json");
+
+                    if (File.Exists(secretFilePath))
+                    {
+                        config.AddJsonFile(secretFilePath, optional: true, reloadOnChange: true);
+                    }
                 })
+
                 .UseSerilog((hostingContext, loggerConfiguration) =>
                 {
                     loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration);
