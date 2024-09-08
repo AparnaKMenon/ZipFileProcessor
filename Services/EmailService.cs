@@ -47,6 +47,7 @@ namespace ZipFileProcessor.Services
                 }
 
                 string message = "Email sent successfully.";
+                // TODO should probably have information of which file - [applicationno]-[guid]. applicable for all logs
                 _logger.LogInformation(message);
             }
             catch (Exception ex)

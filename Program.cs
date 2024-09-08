@@ -12,7 +12,6 @@ namespace ZipFileProcessor
         static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-            .WriteTo.File("Logs/ZipFileProcessor.log", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
             var host = CreateHostBuilder(args).Build();

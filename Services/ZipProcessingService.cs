@@ -56,20 +56,23 @@ namespace ZipFileProcessor.Services
         {
             string extractPath = string.Empty;
             try
-            {
+            {                
                 // Generate a unique folder name for extraction
                 extractPath = Path.Combine(_zipProcessingSettings.ExtractedFolderLocation, Guid.NewGuid().ToString());
                 Directory.CreateDirectory(extractPath);
 
-                // Extract the ZIP file asynchronously
-                 ZipFile.ExtractToDirectory(zipFilePath, extractPath);
+                // Extract the ZIP file
+                ZipFile.ExtractToDirectory(zipFilePath, extractPath);
                 _logger.LogInformation($"Extracted '{zipFilePath}' to '{extractPath}'");
+
+                // Validate file types
+                ValidateExtractedFiles(extractPath);
 
                 // Validate and rename folder based on applicationno from party.xml
                 string partyXmlPath = Path.Combine(extractPath, _zipProcessingSettings.PartyXmlFileName);
                 if (File.Exists(partyXmlPath))
                 {
-                    int applicationNo = GetApplicationNoFromXml(partyXmlPath);
+                    int applicationNo = GetApplicationNumberFromXml(partyXmlPath);
                     ValidatePartyXml(partyXmlPath);
 
                     string newFolderName = $"{applicationNo}-{Guid.NewGuid()}";
@@ -97,7 +100,24 @@ namespace ZipFileProcessor.Services
             }
         }
 
-        private int GetApplicationNoFromXml(string xmlFilePath)
+        private void ValidateExtractedFiles(string extractPath)
+        {
+            string[] files = Directory.GetFiles(extractPath, "*.*", SearchOption.AllDirectories);
+            var validExtensions = _zipProcessingSettings.ValidFileTypes.Select(ext => $".{ext.ToLower()}").ToArray();
+
+            foreach (var file in files)
+            {
+                string fileExtension = Path.GetExtension(file).ToLower();
+                if (!validExtensions.Contains(fileExtension))
+                {
+                    throw new Exception($"Invalid file type '{fileExtension}' found in extracted files: '{file}'.");
+                }
+            }
+
+            _logger.LogInformation("All extracted files have valid formats.");
+        }
+
+        private int GetApplicationNumberFromXml(string xmlFilePath)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(xmlFilePath);
@@ -110,6 +130,7 @@ namespace ZipFileProcessor.Services
 
             return applicationNo;
         }
+
 
         private void ValidatePartyXml(string xmlFilePath)
         {
