@@ -55,5 +55,36 @@ namespace ZipFileProcessor.Services
                 _logger.LogError("Error sending email", ex);
             }
         }
+
+        public void SendEmail(string subject, string body)
+        {
+            try
+            {
+                using (var mail = new MailMessage())
+                {
+                    mail.From = new MailAddress(_emailSettings.SenderEmail);
+                    mail.To.Add(_emailSettings.AdminEmail);
+                    mail.Subject = subject;
+                    mail.Body = body;
+
+                    using (var smtpClient = new SmtpClient(_emailSettings.SmtpHost, _emailSettings.SmtpPort))
+                    {
+                        smtpClient.EnableSsl = true;
+                        smtpClient.Credentials = new NetworkCredential(_emailSettings.SenderEmail, _emailSettings.SenderPassword);
+
+                        // Send the email synchronously
+                        smtpClient.Send(mail);
+                    }
+                }
+
+                string message = "Email sent successfully.";
+                // TODO should probably have information of which file - [applicationno]-[guid]. applicable for all logs
+                _logger.LogInformation(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error sending email", ex);
+            }
+        }
     }
 }

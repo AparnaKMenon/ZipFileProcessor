@@ -73,7 +73,7 @@ namespace ZipFileProcessor.Services
                 if (File.Exists(partyXmlPath))
                 {
                     int applicationNo = GetApplicationNumberFromXml(partyXmlPath);
-                    ValidatePartyXml(partyXmlPath);
+                    ValidatePartyXml(partyXmlPath, applicationNo);
 
                     string newFolderName = $"{applicationNo}-{Guid.NewGuid()}";
                     string newFolderPath = Path.Combine(_zipProcessingSettings.ExtractedFolderLocation, newFolderName);
@@ -83,8 +83,9 @@ namespace ZipFileProcessor.Services
                     _logger.LogInformation(message);
 
                     // Notify via email
-                    message = $"ZIP file '{zipFilePath}' processed and extracted to '{newFolderPath}'.";
-                    await _emailService.SendEmailAsync("ZIP File Processed", message);
+                    string subject = $"Application # {applicationNo} - ZIP File Extracted";
+                    message = $"Application # {applicationNo} - ZIP file '{zipFilePath}' processed and extracted to '{newFolderPath}'.";
+                    await _emailService.SendEmailAsync(subject, message);
                 }
                 else
                 {
@@ -113,9 +114,10 @@ namespace ZipFileProcessor.Services
                 string fileExtension = Path.GetExtension(file).ToLower();
                 if (!validExtensions.Contains(fileExtension))
                 {
-                    string msg = $"Invalid file type '{fileExtension}' found in extracted files: '{file}'.";
-                    _logger.LogError(msg);
-                    throw new Exception(msg);
+                    string message = $"Invalid file type '{fileExtension}' found in extracted files: '{file}'.";
+                    _logger.LogError(message);
+
+                    throw new Exception(message);
                 }
             }
 
@@ -140,7 +142,7 @@ namespace ZipFileProcessor.Services
         }
 
 
-        private void ValidatePartyXml(string xmlFilePath)
+        private void ValidatePartyXml(string xmlFilePath, int applicationNo)
         {
             LogFunctionEntry();
             XmlSchemaSet schema = new XmlSchemaSet();
@@ -160,6 +162,11 @@ namespace ZipFileProcessor.Services
                 }
                 else if (e.Severity == XmlSeverityType.Error)
                 {
+                    // Notify via email
+                    string subject = $"Application # {applicationNo} - PartyXml Validation Error ";
+                    string message = subject + " : {e.Message}";
+                    _emailService.SendEmail(subject, message);
+
                     _logger.LogError($"Error: {e.Message}");
                     throw new Exception($"Validation error: {e.Message}");
                 }
@@ -169,6 +176,7 @@ namespace ZipFileProcessor.Services
             {
                 while (reader.Read()) { } // Read the XML file, triggers validation
             }
+
             string message = $"'{xmlFilePath}' validated successfully against '{_zipProcessingSettings.PartyXsdFileNameWithLocation}'.";
             _logger.LogInformation(message);
             LogFunctionExit();
